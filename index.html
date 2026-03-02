@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#0b0b0c">
+  <title>Tummy Time</title>
+
+  <style>
+    :root{
+      --bg0:#0b0b0c;
+      --bg1:#121214;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+      --muted2: rgba(255,255,255,.45);
+      --accent:#7c5cff;
+      --good:#34c759;
+      --warn:#ffcc00;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+    }
+
+    /* Light mode */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg0:#f6f7fb;
+        --bg1:#ffffff;
+        --card: rgba(0,0,0,.045);
+        --card2: rgba(0,0,0,.06);
+        --stroke: rgba(0,0,0,.10);
+        --text: rgba(0,0,0,.88);
+        --muted: rgba(0,0,0,.58);
+        --muted2: rgba(0,0,0,.42);
+        --accent:#5a42ff;
+        --shadow: 0 12px 26px rgba(0,0,0,.10);
+      }
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 30% 10%, rgba(124,92,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 85% 35%, rgba(52,199,89,.12), transparent 62%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+      padding: env(safe-area-inset-top) 18px env(safe-area-inset-bottom) 18px;
+    }
+
+    .wrap{ max-width: 620px; margin: 0 auto; padding: 18px 0 28px; }
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+      margin: 6px 2px 14px;
+    }
+    .title{
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      margin:0;
+      line-height:1.15;
+    }
+    .subtitle{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background: var(--muted2);
+    }
+    .chip.running .dot{ background: var(--good); }
+    .chip.running{ color: rgba(52,199,89,.92); border-color: rgba(52,199,89,.22); background: rgba(52,199,89,.10); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+    }
+    @media (max-width: 680px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero{
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      padding: 16px;
+    }
+    .hero .left{ flex: 1; min-width: 0; }
+    .todayLabel{
+      color: var(--muted);
+      font-size: 13px;
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      margin-bottom: 6px;
+    }
+    .todayLabel b{ color: var(--text); font-weight: 700; }
+    .time{
+      font-size: 46px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      margin: 2px 0 6px;
+      line-height: 1.05;
+    }
+    .statusLine{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+      align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--card2);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .pill.good{
+      border-color: rgba(52,199,89,.25);
+      background: rgba(52,199,89,.10);
+      color: rgba(52,199,89,.95);
+    }
+    .pill.warn{
+      border-color: rgba(255,204,0,.25);
+      background: rgba(255,204,0,.12);
+      color: rgba(138,109,0,.95);
+    }
+
+    .toggle{
+      width: 100%;
+      margin-top: 14px;
+      border: none;
+      cursor: pointer;
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #2d7bff);
+      box-shadow: 0 12px 26px rgba(124,92,255,.28);
+      transition: transform .06s ease, filter .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .toggle:active{ transform: translateY(1px) scale(.99); }
+    .toggle.stop{
+      background: linear-gradient(135deg, #ff3b30, #ff7a69);
+      box-shadow: 0 12px 26px rgba(255,59,48,.22);
+    }
+
+    /* Ring */
+    .ringWrap{
+      width: 140px;
+      min-width: 140px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .ring{
+      width: 140px;
+      height: 140px;
+      position: relative;
+    }
+    .ring svg{ width: 140px; height: 140px; transform: rotate(-90deg); }
+    .ring .center{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding: 10px;
+    }
+    .ring .center .mins{
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .ring .center .cap{
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .ring .marker{
+      position:absolute;
+      top: 6px;
+      right: 10px;
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    /* History */
+    .sectionHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .sectionHead b{ font-weight: 850; }
+    .meta{ color: var(--muted); font-size: 12px; }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style:none;
+    }
+    .rowItem{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 10px 12px;
+      border-radius: var(--radius2);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+    }
+    @media (prefers-color-scheme: light){
+      .rowItem{ background: rgba(0,0,0,.025); }
+    }
+    .rowItem .d{ font-size: 13px; color: var(--muted); }
+    .rowItem .v{ font-size: 14px; font-weight: 800; }
+
+    .empty{
+      color: var(--muted);
+      font-size: 13px;
+      padding: 10px 2px 2px;
+    }
+
+    footer{
+      margin-top: 14px;
+      color: var(--muted2);
+      font-size: 12px;
+      text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="title">Tummy Time</h1>
+        <div class="subtitle">Goal: 60–90 min/day • Auto-resets at midnight</div>
+      </div>
+      <div class="chip" id="stateChip">
+        <span class="dot"></span>
+        <span id="chipText">Stopped</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card hero">
+        <div class="left">
+          <div class="todayLabel"><b>Today</b> <span id="date"></span></div>
+          <div class="time" id="display">00:00</div>
+
+          <div class="statusLine">
+            <span class="pill" id="rangePill">—</span>
+            <span class="pill" id="detailPill">—</span>
+          </div>
+
+          <button class="toggle" id="toggle">Start</button>
+        </div>
+
+        <div class="ringWrap">
+          <div class="ring" aria-label="progress">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="10"></circle>
+              <circle id="ringArc" cx="60" cy="60" r="46" fill="none"
+                      stroke="url(#g1)" stroke-linecap="round" stroke-width="10"
+                      stroke-dasharray="289.027" stroke-dashoffset="289.027"></circle>
+
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="var(--accent)"/>
+                  <stop offset="100%" stop-color="var(--good)"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <div class="center">
+              <div class="mins" id="ringMins">0m</div>
+              <div class="cap">out of 90m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sectionHead">
+          <div><b>History</b></div>
+          <div class="meta" id="historyMeta"></div>
+        </div>
+
+        <ul class="list" id="historyList"></ul>
+        <div class="empty" id="emptyHistory" style="display:none;">No history yet.</div>
+      </div>
+    </div>
+
+    <footer>
+      Tip: Add to Home Screen in Safari for a full-screen “app” feel.
+    </footer>
+  </div>
+
+<script>
+(() => {
+  const LS_KEY = "tummyTimer.v3";           // Safari localStorage key
+  const GOAL_MIN = 60;
+  const CAP_MIN  = 90;
+  const HISTORY_KEEP_DAYS = 180;
+  const HISTORY_SHOW_DAYS = 14;
+
+  const el = (id) => document.getElementById(id);
+
+  const display = el("display");
+  const dateEl = el("date");
+
+  const toggleBtn = el("toggle");
+  const stateChip = el("stateChip");
+  const chipText  = el("chipText");
+
+  const rangePill  = el("rangePill");
+  const detailPill = el("detailPill");
+
+  const ringArc  = el("ringArc");
+  const ringMins = el("ringMins");
+
+  const historyList = el("historyList");
+  const historyMeta = el("historyMeta");
+  const emptyHistory = el("emptyHistory");
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const CIRC = 2 * Math.PI * 46; // r=46
+
+  function dateKeyFromMs(ms) {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  }
+
+  function startOfNextDayMs(ms) {
+    const d = new Date(ms);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 0, 0).getTime();
+  }
+
+  function formatMMSS(seconds) {
+    seconds = Math.max(0, Math.floor(seconds));
+    const mm = pad2(Math.floor(seconds / 60));
+    const ss = pad2(seconds % 60);
+    return `${mm}:${ss}`;
+  }
+
+  function formatTotal(seconds) {
+    seconds = Math.max(0, Math.floor(seconds));
+    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    if (hrs > 0) return `${hrs}h ${pad2(rem)}m`;
+    return `${mins}m`;
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return { running: false, lastStartMs: null, totals: {} };
+      const obj = JSON.parse(raw);
+      return {
+        running: !!obj.running,
+        lastStartMs: obj.lastStartMs ?? null,
+        totals: (obj.totals && typeof obj.totals === "object") ? obj.totals : {},
+      };
+    } catch {
+      return { running: false, lastStartMs: null, totals: {} };
+    }
+  }
+
+  function save() {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+
+  // Split elapsed time across midnight boundaries and add to per-day totals.
+  function addElapsed(startMs, endMs) {
+    let t = startMs;
+    while (t < endMs) {
+      const dayKey = dateKeyFromMs(t);
+      const cutoff = Math.min(endMs, startOfNextDayMs(t));
+      const deltaSec = (cutoff - t) / 1000;
+      state.totals[dayKey] = (state.totals[dayKey] || 0) + deltaSec;
+      t = cutoff;
+    }
+  }
+
+  function pruneHistory() {
+    const now = Date.now();
+    const cutoffMs = now - HISTORY_KEEP_DAYS * 24 * 60 * 60 * 1000;
+    const cutoffKey = dateKeyFromMs(cutoffMs);
+    for (const k of Object.keys(state.totals)) {
+      if (k < cutoffKey) delete state.totals[k];
+    }
+  }
+
+  function accrueIfRunning() {
+    if (!state.running) return;
+    const now = Date.now();
+    if (!state.lastStartMs) {
+      state.lastStartMs = now;
+      return;
+    }
+    if (now <= state.lastStartMs) return;
+
+    addElapsed(state.lastStartMs, now);
+    state.lastStartMs = now;
+  }
+
+  function getTodaySec() {
+    const k = dateKeyFromMs(Date.now());
+    return state.totals[k] || 0;
+  }
+
+  function setRingProgress(todayMin) {
+    const frac = Math.max(0, Math.min(1, todayMin / CAP_MIN));
+    const offset = CIRC * (1 - frac);
+    ringArc.setAttribute("stroke-dasharray", String(CIRC));
+    ringArc.setAttribute("stroke-dashoffset", String(offset));
+  }
+
+  function renderStatus(todayMin) {
+    ringMins.textContent = `${Math.floor(todayMin)}m`;
+    setRingProgress(todayMin);
+
+    if (todayMin < GOAL_MIN) {
+      rangePill.className = "pill warn";
+      rangePill.textContent = "Below goal";
+      detailPill.className = "pill";
+      detailPill.textContent = `${Math.ceil(GOAL_MIN - todayMin)} min to 60`;
+    } else if (todayMin < CAP_MIN) {
+      rangePill.className = "pill good";
+      rangePill.textContent = "In range";
+      detailPill.className = "pill";
+      detailPill.textContent = `${Math.floor(todayMin)} / 90 min`;
+    } else {
+      rangePill.className = "pill good";
+      rangePill.textContent = "90+ reached";
+      detailPill.className = "pill";
+      detailPill.textContent = `${Math.floor(todayMin)} min`;
+    }
+  }
+
+  function renderHistory() {
+    const keys = Object.keys(state.totals).sort((a, b) => (a < b ? 1 : -1));
+    const showKeys = keys.slice(0, HISTORY_SHOW_DAYS);
+
+    historyMeta.textContent = keys.length ? `Last ${showKeys.length} days` : "";
+    historyList.innerHTML = "";
+    emptyHistory.style.display = showKeys.length ? "none" : "block";
+
+    for (const k of showKeys) {
+      const li = document.createElement("li");
+      li.className = "rowItem";
+
+      const left = document.createElement("div");
+      left.className = "d";
+      left.textContent = k;
+
+      const right = document.createElement("div");
+      right.className = "v";
+      right.textContent = formatTotal(state.totals[k] || 0);
+
+      li.appendChild(left);
+      li.appendChild(right);
+      historyList.appendChild(li);
+    }
+  }
+
+  function render() {
+    pruneHistory();
+
+    const todayKey = dateKeyFromMs(Date.now());
+    const todaySec = getTodaySec();
+    const todayMin = todaySec / 60;
+
+    dateEl.textContent = todayKey;
+    display.textContent = formatMMSS(todaySec);
+
+    // Running chip + button
+    if (state.running) {
+      stateChip.classList.add("running");
+      chipText.textContent = "Running";
+      toggleBtn.textContent = "Stop";
+      toggleBtn.classList.add("stop");
+    } else {
+      stateChip.classList.remove("running");
+      chipText.textContent = "Stopped";
+      toggleBtn.textContent = "Start";
+      toggleBtn.classList.remove("stop");
+    }
+
+    renderStatus(todayMin);
+    renderHistory();
+  }
+
+  function tick() {
+    accrueIfRunning();
+    save();
+    render();
+  }
+
+  // init
+  let state = load();
+  pruneHistory();
+  save();
+  render();
+
+  // toggle start/stop
+  toggleBtn.addEventListener("click", () => {
+    if (!state.running) {
+      state.running = true;
+      state.lastStartMs = Date.now();
+    } else {
+      accrueIfRunning();
+      state.running = false;
+      state.lastStartMs = null;
+    }
+    save();
+    render();
+  });
+
+  // run timer
+  setInterval(tick, 1000);
+
+  // catch up when returning to tab
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) tick();
+  });
+})();
+</script>
+</body>
+</html>
